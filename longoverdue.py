@@ -115,31 +115,31 @@ def list_():
             others[p.user].append(p.command)
 
     def warn(desc):
-        click.echo(f"{color(15, True)}The following {desc} "
+        print(f"{color(15, True)}The following {desc} "
                 f"{color(15, True)}may be running outdated code:{color(-1)}")
 
     def item(name, warning=""):
         if warning is not "":
             warning = f" {color(3)}({warning}){color(-1)}"
-        click.echo(f"{color(15)}•{color(-1)} {name}{warning}")
+        print(f"{color(15)}•{color(-1)} {name}{warning}")
 
     if services:
         warn("services")
         for s, cmd in sorted(set(services)):
             item(f"{s} ({cmd})", NO_AUTORESTART.get(s, ""))
-        click.echo()
+        print()
 
     for user, units in uunits.items():
         warn(f"units for user {color(12, True)}{user}")
         for unit, cmd in sorted(set(units)):
             item(f"{unit} ({cmd})")
-        click.echo()
+        print()
 
     for user, procs in others.items():
         warn(f"processes for user {color(12, True)}{user}")
         for cmd in sorted(set(procs)):
             item(cmd)
-        click.echo()
+        print()
 
 @main.command()
 def restart():
@@ -163,7 +163,7 @@ def restart():
         command = ["systemctl", "--user", "restart"] + list(userservices)
 
     if command:
-        click.echo(" ".join(command))
+        print(" ".join(command))
         subprocess.run(command, check=True)
 
 @main.command()
@@ -176,7 +176,7 @@ def info(regex):
     try:
         pids = subprocess.run(prgrep, stdout=subprocess.PIPE, check=True)
     except subprocess.CalledProcessError:
-        click.echo(f"{color(15, True)}No process matched {color(12, True)}{regex}"
+        print(f"{color(15, True)}No process matched {color(12, True)}{regex}"
                 f"{color(15, True)}.{color(-1)}")
         sys.exit(1)
     pids = [pid.strip() for pid in pids.stdout.decode(locale_encoding).splitlines()]
@@ -184,18 +184,18 @@ def info(regex):
     try:
         procs = getprocs(pids)
     except subprocess.CalledProcessError:
-        click.echo("Couldn't retrieve process info.")
+        print("Couldn't retrieve process info.")
         sys.exit(1)
 
     files = sorted(set((f.name for p in procs for f in p.files)))
 
     if files:
-        click.echo(f"{color(12, True)}{regex}{color(15, True)} is using the "
+        print(f"{color(12, True)}{regex}{color(15, True)} is using the "
                 f"following outdated binaries:{color(-1)}")
         for f in files:
-            click.echo(f"{color(15)}•{color(-1)} {f}")
+            print(f"{color(15)}•{color(-1)} {f}")
     else:
-        click.echo(f"{color(12, True)}{regex}{color(15, True)} appears to be "
+        print(f"{color(12, True)}{regex}{color(15, True)} appears to be "
                 f"running updated binaries.{color(-1)}")
 
 if __name__ == "__main__":
