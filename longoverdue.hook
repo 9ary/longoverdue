@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Upgrade
+Type = File
+Target = usr/*
+
+[Action]
+Description = Checking for stale binary handles...
+Depends = longoverdue
+When = PostTransaction
+Exec = /usr/bin/longoverdue list
