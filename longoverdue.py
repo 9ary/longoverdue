@@ -87,10 +87,12 @@ def getprocs(pids=None):
 
     return procs
 
-@click.group()
-def main():
+@click.group(invoke_without_command=True)
+@click.pass_context
+def main(ctx):
     """Manage running services that need updating"""
-    pass
+    if ctx.invoked_subcommand is None:
+        list_()
 
 @main.command("list")
 def list_():
