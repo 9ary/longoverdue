@@ -158,11 +158,20 @@ def restart():
 
     command = []
     if euid == 0 and services:
-        command = ["systemctl", "restart"] + list(services)
-    elif euid != 0 and userservices:
-        command = ["systemctl", "--user", "restart"] + list(userservices)
+        command = ["systemctl", "daemon-reload"]
+        print(" ".join(command))
+        subprocess.run(command, check=True)
 
-    if command:
+        command = ["systemctl", "restart"] + list(services)
+        print(" ".join(command))
+        subprocess.run(command, check=True)
+
+    elif euid != 0 and userservices:
+        command = ["systemctl", "--user", "daemon-reload"]
+        print(" ".join(command))
+        subprocess.run(command, check=True)
+
+        command = ["systemctl", "--user", "restart"] + list(userservices)
         print(" ".join(command))
         subprocess.run(command, check=True)
 
