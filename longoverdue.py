@@ -66,8 +66,11 @@ def getprocs(pids=None):
             procs.append(Process(decode_nuld(l)))
         elif l[0] == "f":
             f = File(decode_nuld(l))
-            if f.name.startswith("/usr"):
-                procs[-1].files.append(f)
+            if not f.name.startswith("/usr"):
+                continue
+            if os.path.basename(f.name) == "icon-theme.cache":
+                continue
+            procs[-1].files.append(f)
     if procs and not procs[-1].files:
         procs.pop()
 
