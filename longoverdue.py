@@ -13,6 +13,9 @@ import click
 NO_AUTORESTART = {"dbus.service": "reboot required",
         "systemd-logind.service": "will log all users out"}
 
+FILE_BLACKLIST = ["icon-theme.cache"]
+EXT_BLACKLIST = [".gresource"]
+
 PATH_REGEX = re.compile(r"^(?P<path>.*?)(?: \((?:(?:path dev=(?P<devmajor>\d+),(?P<devminor>\d+)|deleted))\))?$")
 
 locale_encoding = locale.nl_langinfo(locale.CODESET)
@@ -68,7 +71,9 @@ def getprocs(pids=None):
             f = File(decode_nuld(l))
             if not f.name.startswith("/usr"):
                 continue
-            if os.path.basename(f.name) == "icon-theme.cache":
+            if os.path.basename(f.name) in FILE_BLACKLIST:
+                continue
+            if os.path.splitext(f.name)[1] in EXT_BLACKLIST:
                 continue
             procs[-1].files.append(f)
     if procs and not procs[-1].files:
