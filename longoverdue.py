@@ -13,8 +13,8 @@ import click
 NO_AUTORESTART = {"dbus.service": "reboot required",
         "systemd-logind.service": "will log all users out"}
 
-FILE_BLACKLIST = ["icon-theme.cache"]
-EXT_BLACKLIST = [".gresource"]
+FILE_BLACKLIST = []
+EXT_BLACKLIST = [".cache", ".gresource"]
 
 PATH_REGEX = re.compile(r"^(?P<path>.*?)(?: \((?:(?:path dev=(?P<devmajor>\d+),(?P<devminor>\d+)|deleted))\))?$")
 
