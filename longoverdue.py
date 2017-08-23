@@ -97,13 +97,15 @@ def getprocs(pids=None):
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-def main(ctx):
+@click.option("-v", "--verbose", count=True)
+def main(ctx, verbose):
     """Manage running services that need updating"""
     if ctx.invoked_subcommand is None:
         list_()
 
 @main.command("list")
-def list_():
+@click.option("-v", "--verbose", count=True)
+def list_(verbose):
     """List running outdated processes"""
     procs = getprocs()
 
@@ -114,41 +116,44 @@ def list_():
         if p.uunit != "-":
             if not p.user in uunits:
                 uunits[p.user] = []
-            uunits[p.user].append((p.uunit, p.command))
+            uunits[p.user].append(p)
 
         elif p.unit.endswith(".service"):
-            services.append((p.unit, p.command))
+            services.append(p)
 
         else:
             if not p.user in others:
                 others[p.user] = []
-            others[p.user].append(p.command)
+            others[p.user].append(p)
 
     def warn(desc):
         print(f"{color(15, True)}The following {desc} "
                 f"{color(15, True)}may be running outdated code:{color(-1)}")
 
-    def item(name, warning=""):
+    def item(name, files, warning=""):
         if warning is not "":
             warning = f" {color(3)}({warning}){color(-1)}"
         print(f"{color(15)}•{color(-1)} {name}{warning}")
+        if verbose:
+            for f in files:
+                print(f"  {color(15)}•{color(-1)} {f.name}")
 
     if services:
         warn("services")
-        for s, cmd in sorted(set(services)):
-            item(f"{s} ({cmd})", NO_AUTORESTART.get(s, ""))
+        for p in sorted(set(services), key=lambda p: p.unit):
+            item(f"{p.unit} ({p.command} ({p.pid}))", p.files, NO_AUTORESTART.get(p.unit, ""))
         print()
 
     for user, units in uunits.items():
         warn(f"units for user {color(12, True)}{user}")
-        for unit, cmd in sorted(set(units)):
-            item(f"{unit} ({cmd})")
+        for p in sorted(set(units), key=lambda p: p.uunit):
+            item(f"{p.uunit} ({p.command} ({p.pid}))", p.files)
         print()
 
     for user, procs in others.items():
         warn(f"processes for user {color(12, True)}{user}")
-        for cmd in sorted(set(procs)):
-            item(cmd)
+        for p in sorted(set(procs), key=lambda p: p.command):
+            item(f"{p.command} ({p.pid})", p.files)
         print()
 
 @main.command()
