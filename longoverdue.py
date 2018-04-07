@@ -107,6 +107,12 @@ def main(ctx, verbose):
 @click.option("-v", "--verbose", count=True)
 def list_(verbose):
     """List running outdated processes"""
+    kernel = os.uname().release
+    if not os.path.exists(f"/usr/lib/modules/{kernel}"):
+        print(f"{color(15, True)}The running kernel ({kernel}) was not found in"
+                f" the file system, it may have been updated{color(-1)}")
+        print()
+
     procs = getprocs()
 
     uunits = {}
