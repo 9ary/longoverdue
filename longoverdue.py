@@ -151,13 +151,13 @@ def list_(verbose):
         print()
 
     for user, units in uunits.items():
-        warn(f"units for user {color(12, True)}{user}")
+        warn(f"units for user {color(4, True)}{user}")
         for p in sorted(set(units), key=lambda p: p.uunit):
             item(f"{p.uunit} ({p.command} ({p.pid}))", p.files)
         print()
 
     for user, procs in others.items():
-        warn(f"processes for user {color(12, True)}{user}")
+        warn(f"processes for user {color(4, True)}{user}")
         for p in sorted(set(procs), key=lambda p: p.command):
             item(f"{p.command} ({p.pid})", p.files)
         print()
@@ -206,7 +206,7 @@ def info(regex):
     try:
         pids = subprocess.run(prgrep, stdout=subprocess.PIPE, check=True)
     except subprocess.CalledProcessError:
-        print(f"{color(15, True)}No process matched {color(12, True)}{regex}"
+        print(f"{color(15, True)}No process matched {color(4, True)}{regex}"
                 f"{color(15, True)}.{color(-1)}")
         sys.exit(1)
     pids = [pid.strip() for pid in pids.stdout.decode(locale_encoding).splitlines()]
@@ -220,12 +220,12 @@ def info(regex):
     files = sorted(set((f.name for p in procs for f in p.files)))
 
     if files:
-        print(f"{color(12, True)}{regex}{color(15, True)} is using the "
+        print(f"{color(4, True)}{regex}{color(15, True)} is using the "
                 f"following outdated binaries:{color(-1)}")
         for f in files:
             print(f"{color(15)}•{color(-1)} {f}")
     else:
-        print(f"{color(12, True)}{regex}{color(15, True)} appears to be "
+        print(f"{color(4, True)}{regex}{color(15, True)} appears to be "
                 f"running updated binaries.{color(-1)}")
 
 if __name__ == "__main__":
