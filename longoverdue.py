@@ -137,7 +137,7 @@ def list_(verbose):
                 f"{color(15, True)}may be running outdated code:{color(-1)}")
 
     def item(name, files, warning=""):
-        if warning is not "":
+        if warning != "":
             warning = f" {color(3)}({warning}){color(-1)}"
         print(f"{color(15)}•{color(-1)} {name}{warning}")
         if verbose:
