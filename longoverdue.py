@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import collections
 import locale
 import os
 import re
@@ -11,7 +10,7 @@ import click
 
 # List of services not to restart automatically
 NO_AUTORESTART = {"dbus.service": "reboot required",
-        "systemd-logind.service": "will log all users out"}
+                  "systemd-logind.service": "will log all users out"}
 
 FILE_BLACKLIST = []
 EXT_BLACKLIST = [".cache", ".gresource"]
@@ -21,7 +20,8 @@ PATH_REGEX = re.compile(r"^(?P<path>.*?)(?: \((?:(?:path dev=(?P<devmajor>\d+),(
 locale_encoding = locale.nl_langinfo(locale.CODESET)
 euid = os.geteuid()
 
-def color(c, bold = False):
+
+def color(c, bold=False):
     ret = "\x1b[0;"
     if c >= 0:
         ret += ";38;5;{}".format(c)
@@ -30,8 +30,10 @@ def color(c, bold = False):
     ret += "m"
     return ret
 
+
 def decode_nuld(nuld):
     return dict((i[0], i[1:]) for i in nuld.strip("\0").split("\0"))
+
 
 class Process:
     def __init__(self, proc):
@@ -45,6 +47,7 @@ class Process:
         self.uunit = None
         self.files = []
 
+
 class File:
     def __init__(self, f):
         self.fd = f.get("f")
@@ -55,12 +58,13 @@ class File:
         self.inode = f.get("i")
         self.name = re.match(PATH_REGEX, f.get("n"))["path"]
 
+
 def getprocs(pids=None):
     # Get and parse a list of processes that have deleted file handles
     lsof = subprocess.run(["lsof", "-dDEL", "-F0"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            check=True)
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL,
+                          check=True)
     procs = []
     for l in lsof.stdout.decode(locale_encoding).splitlines():
         if l[0] == "p":
@@ -85,15 +89,16 @@ def getprocs(pids=None):
     # Find the systemd unit each process belongs to
     pids = [p.pid for p in procs]
     units = subprocess.run(["ps", "-o", "unit=,uunit="] + pids,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            check=True)
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.DEVNULL,
+                           check=True)
     units = (l.split() for l in units.stdout.decode(locale_encoding).splitlines())
     for proc, (unit, uunit) in zip(procs, units):
         proc.unit = unit
         proc.uunit = uunit
 
     return procs
+
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -103,6 +108,7 @@ def main(ctx, verbose):
     if ctx.invoked_subcommand is None:
         list_()
 
+
 @main.command("list")
 @click.option("-v", "--verbose", count=True)
 def list_(verbose):
@@ -110,7 +116,7 @@ def list_(verbose):
     kernel = os.uname().release
     if not os.path.exists(f"/usr/lib/modules/{kernel}"):
         print(f"{color(15, True)}The running kernel ({kernel}) was not found in"
-                f" the file system, it may have been updated{color(-1)}")
+              f" the file system, it may have been updated{color(-1)}")
         print()
 
     procs = getprocs()
@@ -134,7 +140,7 @@ def list_(verbose):
 
     def warn(desc):
         print(f"{color(15, True)}The following {desc} "
-                f"{color(15, True)}may be running outdated code:{color(-1)}")
+              f"{color(15, True)}may be running outdated code:{color(-1)}")
 
     def item(name, files, warning=""):
         if warning != "":
@@ -161,6 +167,7 @@ def list_(verbose):
         for p in sorted(set(procs), key=lambda p: p.command):
             item(f"{p.command} ({p.pid})", p.files)
         print()
+
 
 @main.command()
 def restart():
@@ -196,18 +203,19 @@ def restart():
         print(" ".join(command))
         subprocess.run(command, check=True)
 
+
 @main.command()
 @click.argument("regex")
 def info(regex):
     """Get details on a process"""
-    prgrep = ["pgrep",  regex]
+    prgrep = ["pgrep", regex]
     if euid != 0:
         prgrep.extend(["-u", str(euid)])
     try:
         pids = subprocess.run(prgrep, stdout=subprocess.PIPE, check=True)
     except subprocess.CalledProcessError:
         print(f"{color(15, True)}No process matched {color(12, True)}{regex}"
-                f"{color(15, True)}.{color(-1)}")
+              f"{color(15, True)}.{color(-1)}")
         sys.exit(1)
     pids = [pid.strip() for pid in pids.stdout.decode(locale_encoding).splitlines()]
 
@@ -221,12 +229,13 @@ def info(regex):
 
     if files:
         print(f"{color(12, True)}{regex}{color(15, True)} is using the "
-                f"following outdated binaries:{color(-1)}")
+              f"following outdated binaries:{color(-1)}")
         for f in files:
             print(f"{color(15)}•{color(-1)} {f}")
     else:
         print(f"{color(12, True)}{regex}{color(15, True)} appears to be "
-                f"running updated binaries.{color(-1)}")
+              f"running updated binaries.{color(-1)}")
+
 
 if __name__ == "__main__":
     main()
