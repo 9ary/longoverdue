@@ -179,22 +179,28 @@ def restart():
 
     command = []
     if euid == 0 and services:
-        command = ["systemctl", "daemon-reload"]
-        print(" ".join(command))
-        subprocess.run(command, check=True)
+        try:
+            command = ["systemctl", "daemon-reload"]
+            print(" ".join(command))
+            subprocess.run(command, check=True)
 
-        command = ["systemctl", "restart"] + list(services)
-        print(" ".join(command))
-        subprocess.run(command, check=True)
+            command = ["systemctl", "restart"] + list(services)
+            print(" ".join(command))
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError:
+            sys.exit(1)
 
     elif euid != 0 and userservices:
-        command = ["systemctl", "--user", "daemon-reload"]
-        print(" ".join(command))
-        subprocess.run(command, check=True)
+        try:
+            command = ["systemctl", "--user", "daemon-reload"]
+            print(" ".join(command))
+            subprocess.run(command, check=True)
 
-        command = ["systemctl", "--user", "restart"] + list(userservices)
-        print(" ".join(command))
-        subprocess.run(command, check=True)
+            command = ["systemctl", "--user", "restart"] + list(userservices)
+            print(" ".join(command))
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError:
+            sys.exit(1)
 
 @main.command()
 @click.argument("regex")
