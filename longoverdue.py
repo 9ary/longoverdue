@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import collections
 import locale
 import os
 import re
@@ -206,7 +205,7 @@ def restart():
 @click.argument("regex")
 def info(regex):
     """Get details on a process"""
-    prgrep = ["pgrep",  regex]
+    prgrep = ["pgrep", regex]
     if euid != 0:
         prgrep.extend(["-u", str(euid)])
     try:
